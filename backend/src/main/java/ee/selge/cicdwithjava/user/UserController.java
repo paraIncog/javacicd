@@ -1,13 +1,14 @@
 package ee.selge.cicdwithjava.user;
 
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:5173") // Vue dev server
 public class UserController {
   private final UserRepository repo;
 
@@ -15,14 +16,19 @@ public class UserController {
     this.repo = repo;
   }
 
-  @PostMapping
-  public UserEntity create(@Valid @RequestBody UserEntity user) {
-    user.setId(null); // ensure it's new
-    return repo.save(user);
+  @GetMapping
+  public List<User> list() {
+    return repo.findAll();
   }
 
-  @GetMapping
-  public List<UserEntity> list() {
-    return repo.findAll();
+  @PostMapping
+  public ResponseEntity<User> create(@Valid @RequestBody User user) {
+    if (repo.existsByEmail(user.getEmail())) {
+      return ResponseEntity.badRequest().build();
+    }
+    User saved = repo.save(user);
+    return ResponseEntity
+        .created(URI.create("/api/users/" + saved.getId()))
+        .body(saved);
   }
 }

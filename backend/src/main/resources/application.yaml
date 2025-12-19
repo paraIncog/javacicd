@@ -2,14 +2,12 @@ spring:
   application:
     name: cicdwithjava
   datasource:
-    url: jdbc:mysql://localhost:3306/myapp?useSSL=false&serverTimezone=UTC
-    username: myuser
-    password: mypass
+    url: jdbc:postgresql://localhost:5432/test1
+    username: postgres
+    password: tere1234
   jpa:
     hibernate:
       ddl-auto: update   # dev only; use migrations in production
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
 server:
   port: 8080
