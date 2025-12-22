@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
-const API = "http://localhost:8080/api/users";
+const API = "/api/users";
 
 const name = ref("");
 const email = ref("");
