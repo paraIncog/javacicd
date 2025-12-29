@@ -10,17 +10,19 @@ services:
     restart: unless-stopped
 
   api:
-    image: ghcr.io/paraIncog/cicd-vue-api:latest
+    image: ghcr.io/paraincog/cicd-vue-api:latest
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "8080:8080"
     depends_on:
       - db
     restart: unless-stopped
 
   web:
-    image: ghcr.io/paraIncog/cicd-vue-web:latest
+    image: ghcr.io/paraincog/cicd-vue-web:latest
     ports:
       - "80:80"
     depends_on:

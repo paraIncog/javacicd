@@ -17,36 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ---- Backend CI (Gradle) ----
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Backend build (skip tests)
-        working-directory: backend
-        run: |
-          chmod +x gradlew
-          ./gradlew build -x test
-
-      # ---- Frontend CI (Vue) ----
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend deps
-        working-directory: frontend
-        run: npm ci
-
-      - name: Build frontend
-        working-directory: frontend
-        run: npm run build
-
   build-and-push:
     name: Build & Push images to GHCR
     needs: ci
