@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
 
   api:
-    image: registry.digitalocean.com/myregistryforaselge/cicd-vue:api-latest
+    image: ghcr.io/paraIncog/cicd-vue-api:latest
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: registry.digitalocean.com/myregistryforaselge/cicd-vue:web-latest
+    image: ghcr.io/paraIncog/cicd-vue-web:latest
     ports:
       - "80:80"
     depends_on:

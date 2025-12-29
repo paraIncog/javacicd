@@ -1,4 +1,4 @@
-name: CI & Deploy (Docker Compose -> DigitalOcean)
+name: CI & Deploy (Docker Compose -> Droplet using GHCR)
 
 on:
   push:
@@ -13,7 +13,6 @@ jobs:
   ci:
     name: CI (Gradle + Vue)
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,7 +25,7 @@ jobs:
           java-version: "21"
           cache: gradle
 
-      - name: Backend tests
+      - name: Backend build (skip tests)
         working-directory: backend
         run: |
           chmod +x gradlew
@@ -49,41 +48,47 @@ jobs:
         run: npm run build
 
   build-and-push:
-    name: Build & Push images to DO Registry
+    name: Build & Push images to GHCR
     needs: ci
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write   # required to push to GHCR with GITHUB_TOKEN :contentReference[oaicite:1]{index=1}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DO_TOKEN }}
+      - name: Compute lowercase owner
+        id: vars
+        run: echo "OWNER_LC=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      - name: Login to DO Container Registry
-        run: doctl registry login --expiry-seconds 600
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}  # GHCR supports GITHUB_TOKEN :contentReference[oaicite:2]{index=2}
 
       - name: Build & push API image
         run: |
-          docker build -t registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:api-latest ./backend
-          docker push registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:api-latest
+          docker build -t ghcr.io/${{ steps.vars.outputs.OWNER_LC }}/cicd-vue-api:latest ./backend
+          docker push ghcr.io/${{ steps.vars.outputs.OWNER_LC }}/cicd-vue-api:latest
 
       - name: Build & push WEB image
         run: |
-          docker build -t registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:web-latest ./frontend
-          docker push registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:web-latest
+          docker build -t ghcr.io/${{ steps.vars.outputs.OWNER_LC }}/cicd-vue-web:latest ./frontend
+          docker push ghcr.io/${{ steps.vars.outputs.OWNER_LC }}/cicd-vue-web:latest
 
   deploy:
-    name: Deploy on Droplet
+    name: Deploy on Droplet (docker compose pull/up)
     needs: build-and-push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: SSH deploy (docker compose pull/up)
+      - name: SSH deploy
         uses: appleboy/ssh-action@v1.2.4
         with:
           host: ${{ secrets.DO_HOST }}
@@ -94,6 +99,12 @@ jobs:
           script: |
             set -e
             cd /var/www/cicd_vue
+
+            # If your GHCR packages are PRIVATE, login first:
+            # (Create GHCR_PAT with at least read:packages) :contentReference[oaicite:3]{index=3}
+            if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+              echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+            fi
 
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
