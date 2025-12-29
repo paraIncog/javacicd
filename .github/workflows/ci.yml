@@ -68,13 +68,13 @@ jobs:
 
       - name: Build & push API image
         run: |
-          docker build -t registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue-api:latest ./backend
-          docker push registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue-api:latest
+          docker build -t registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:api-latest ./backend
+          docker push registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:api-latest
 
       - name: Build & push WEB image
         run: |
-          docker build -t registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue-web:latest ./frontend
-          docker push registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue-web:latest
+          docker build -t registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:web-latest ./frontend
+          docker push registry.digitalocean.com/${{ secrets.DO_REGISTRY }}/cicd-vue:web-latest
 
   deploy:
     name: Deploy on Droplet
