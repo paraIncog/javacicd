@@ -23,15 +23,14 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"   # change to "17" if your backend is Java 17
+          java-version: "21"
           cache: gradle
-		
+
       - name: Backend tests
         working-directory: backend
         run: |
           chmod +x gradlew
           ./gradlew test
-
 
       # ---- Frontend CI (Vue) ----
       - name: Set up Node
@@ -88,7 +87,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.4
         with:
           host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USER }}      # usually root
+          username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_KEY }}
           port: 22
           command_timeout: 30m
