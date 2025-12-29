@@ -25,10 +25,13 @@ jobs:
           distribution: temurin
           java-version: "21"   # change to "17" if your backend is Java 17
           cache: gradle
-
+		
       - name: Backend tests
         working-directory: backend
-        run: ./gradlew test
+        run: |
+          chmod +x gradlew
+          ./gradlew test
+
 
       # ---- Frontend CI (Vue) ----
       - name: Set up Node
