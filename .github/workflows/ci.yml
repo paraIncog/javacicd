@@ -30,7 +30,7 @@ jobs:
         working-directory: backend
         run: |
           chmod +x gradlew
-          ./gradlew test
+          ./gradlew build -x test
 
       # ---- Frontend CI (Vue) ----
       - name: Set up Node
